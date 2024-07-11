@@ -4,12 +4,9 @@ import "react-datepicker/dist/react-datepicker.css";
 import { Control, useController } from 'react-hook-form';
 import moment from 'moment';
 import { Box } from '@mui/material';
-
-type FormValues = {
-    title: string
-    description?: string
-    deadline?: string
-}
+import { FormValues } from '../../pages/Todos/todoTypes';
+import { datePickerStyle } from './style';
+import { DATE_FORMAT, HOUR_FORMAT } from '../../constants';
 
 interface IProps {
     control: Control<FormValues, any>,
@@ -19,35 +16,23 @@ interface IProps {
 export const CustomDatePicker: FC<IProps> = ({ control, name }) => {
     const { field } = useController({ control, name })
 
-    const parsedDate = field.value && moment(field.value, 'MMM DD YYYY HH:mm:ss').isValid() ? moment(field.value, 'MMM DD YYYY HH:mm:ss').toDate() : null;
+    const parsedDate = field.value && moment(field.value, DATE_FORMAT).isValid() ? moment(field.value, DATE_FORMAT).toDate() : null;
 
     const handleChange = (date: Date | null) => {
-        const formattedDate = date ? moment(date).format('MMM DD YYYY HH:mm:ss') : '';
+        const formattedDate = date ? moment(date).format(DATE_FORMAT) : '';
         field.onChange(formattedDate?.toString())
     }
 
     return (
-        <Box
-            sx={{
-                div: {
-                    div: {
-                        input: {
-                            height: '56px',
-                            width: '140px',
-                            padding: '0 0 0 10px'
-                        }
-                    }
-                }
-            }}
-        >
+        <Box sx={datePickerStyle}>
             <DatePicker
                 selected={parsedDate}
                 {...field}
                 onChange={handleChange}
                 name={name}
                 showTimeSelect
-                dateFormat='MMM DD YYYY HH:mm:ss'
-                timeFormat="HH:mm:ss"
+                dateFormat={DATE_FORMAT}
+                timeFormat={HOUR_FORMAT}
             />
         </Box>
     )

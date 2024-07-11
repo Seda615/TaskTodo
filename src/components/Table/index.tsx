@@ -9,11 +9,12 @@ import {
     Paper,
 } from "@mui/material"
 import { tableCellClasses } from '@mui/material/TableCell';
-import { useState } from "react";
-import { Control, UseFormSetValue } from "react-hook-form";
+import { Dispatch, useState } from "react";
+import { Control, FieldErrors, FieldValues, UseFormSetValue } from "react-hook-form";
 import { Input } from "../Input";
 import { CustomDatePicker } from "../DatePicker";
-
+import { FormValues } from "../../pages/Todos/todoTypes";
+import { tableCellStyle, tableStyle } from "./style";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
     [`&.${tableCellClasses.head}`]: {
@@ -34,48 +35,42 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
     },
 }));
 
-type FormValues = {
-    title: string
-    description?: string
-    deadline?: string
-    id?: string
-}
-
-
 
 interface IProps<T extends string> {
     data: (Partial<Record<T, string | undefined>> & { id: string })[],
     columns: T[],
     control?: Control<FormValues, any>,
     actionsName?: string[],
-    action?: (action: string, column: Partial<Record<T, string | undefined>>) => void
+    action?: (action: string, column: Partial<Record<T, string | undefined>>, setIsEditable: Dispatch<React.SetStateAction<string>>) => void
     setValue?: UseFormSetValue<FormValues>
+    errors?: FieldErrors<FieldValues>;
 }
 
-export function DataTable<T extends string>({ data, columns, control, action, actionsName, setValue }: IProps<T>) {
-    const [isEditable, setIsEditable] = useState('');
+export function DataTable<T extends string>({ data, columns, control, action, actionsName, setValue, errors }: IProps<T>) {
+    const [isEditable, setIsEditable] = useState<string>('');
 
     const renderEditableRow = (value: string, name: string) => {
-        if (setValue && control) {
+        if ((name === 'title' || name === 'description' || name === 'deadline') && setValue && !isEditable) {
+            setValue(name, value)
             setValue("id", isEditable)
+        }
+        
+        if (setValue && control) {
             if (name === 'title' || name === 'description') {
-                setValue(name, value)
                 return (
-                    <Input name={name} control={control} />
+                    <Input name={name} control={control} error={errors && errors?.[name]?.message  as string} />
                 )
             } else if (name === 'deadline') {
-                setValue(name, value)
                 return <CustomDatePicker control={control} name={name} />
-            } else {
+            } 
                 return value
-            }
         }
 
     }
 
     return (
         <TableContainer component={Paper}>
-            <Table sx={{ minWidth: 700 }} aria-label="customized table">
+            <Table sx={tableStyle} aria-label="customized table">
                 <TableHead>
                     <TableRow>
                         {columns.map(column => (
@@ -89,9 +84,9 @@ export function DataTable<T extends string>({ data, columns, control, action, ac
                 </TableHead>
                 <TableBody>
                     {data.map((row, index) => (
-                        <StyledTableRow key={index}>
+                        <StyledTableRow key={row.id}>
                             {columns.map(column => (
-                                <StyledTableCell component="th" scope="row" key={`${row.id}_${column}`}>
+                                <StyledTableCell component="td" align={'justify'} scope="row" sx={tableCellStyle} key={`${row[column]}`}>
                                     {isEditable === row.id && control ?
                                         renderEditableRow(row[column] as string, column) :
                                         row[column]
@@ -100,26 +95,20 @@ export function DataTable<T extends string>({ data, columns, control, action, ac
                             ))}
                             {(actionsName && actionsName?.length > 0) &&
                                 <StyledTableCell>
-
                                     {actionsName?.map((name) => (
-                                        <StyledTableCell>
-
-                                            <button
-                                                key={name}
-                                                onClick={() => {
-                                                    if ((name === 'edit' && !!isEditable) || name === 'delete') {
-                                                        setIsEditable('')
-                                                        action && action(name, row)
-                                                    } else {
-                                                        setIsEditable(row.id ? row.id : '')
-                                                    }
-                                                }}
-                                                type={'submit'}
-                                            >
-                                                {name}
-                                            </button>
-                                        </StyledTableCell>
-
+                                        <button
+                                            key={name}
+                                            onClick={() => {
+                                                if ((name === 'edit' && !!isEditable) || name === 'delete') {
+                                                    action && action(name, row, setIsEditable)
+                                                } else {
+                                                    setIsEditable(row.id ? row.id : '')
+                                                }
+                                            }}
+                                            type={'submit'}
+                                        >
+                                            {name}
+                                        </button>
                                     ))}
                                 </StyledTableCell>
                             }

@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit'
-import { TodosState } from './entities'
+import { TodosState } from './todoTypes'
 
 const initialState: TodosState = {
     todos: [],
@@ -25,7 +25,7 @@ const todosSlice = createSlice({
                 (todo) => todo.id === action.payload.id
               )
               if (matchingTodoIndex !== -1) {
-                state.todos[matchingTodoIndex] = action.payload
+                state.todos[matchingTodoIndex] = {...state.todos[matchingTodoIndex], ...action.payload}
               }
         },
         todoDelete(state, action) {

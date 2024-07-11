@@ -5,13 +5,8 @@ import { yupResolver } from "@hookform/resolvers/yup"
 import { useAppDispatch } from "../../../store/hook"
 import { todoAdded } from "../../../store/reducers/todos/todoSlice"
 import { CustomDatePicker, Input } from "../../../components"
-import { formStyle } from "./style"
-
-interface FormValues {
-    title: string
-    description?: string
-    deadline?: string
-}
+import { buttonStyle, formStyle } from "./style"
+import { FormValues } from "../todoTypes"
 
 const date = new Date()
 
@@ -42,7 +37,7 @@ const CreateTodos = () => {
                     type={"submit"} 
                     size="medium" 
                     variant="outlined" 
-                    sx={{width: '150px', height: '56px', margin: '10px 0'}}
+                    sx={buttonStyle}
                 >
                     submit
                 </Button>

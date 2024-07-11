@@ -12,3 +12,9 @@ export const formStyle = {
         justifyContent: 'space-between',
     }
 }
+
+export const buttonStyle = {
+    width: '150px', 
+    height: '56px',
+    margin: '10px 0'
+}

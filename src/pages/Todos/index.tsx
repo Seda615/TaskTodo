@@ -1,25 +1,19 @@
 import { useAppDispatch, useAppSelector } from "../../store/hook"
 import CreateTodos from "./CreateTodoForm"
 import { DataTable } from "../../components"
-import { todoTitles } from "./entities"
+import { todoTitles } from "./todoTypes"
 import { useForm } from "react-hook-form"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { todoSchema } from "../../validations/todosSchema"
 import { todoDelete, todoUpdate } from "../../store/reducers/todos/todoSlice"
-import { useState } from "react"
+import { Dispatch, useState } from "react"
+import { FormValues } from "./todoTypes"
 import { Box, Tab, Tabs } from "@mui/material"
+import { tabsBoxStyle, tabsStyle } from "./style"
 
 const columns: todoTitles[] = [
     'title', 'description', 'deadline', 'status'
 ]
-
-type FormValues = {
-    title: string
-    description?: string
-    deadline?: string
-    status?: string
-    id?: string
-}
 
 const Todos = () => {
     const [tab, setTab] = useState('pending')
@@ -29,7 +23,7 @@ const Todos = () => {
 
     const dispatch = useAppDispatch();
 
-    const { handleSubmit, control, setValue } = useForm<FormValues>({
+    const { handleSubmit, control, setValue, formState: { errors } } = useForm<FormValues>({
         defaultValues: {
             id: "",
             title: "",
@@ -40,20 +34,23 @@ const Todos = () => {
         mode: "onChange",
     })
 
-    const onSubmit = (data: FormValues) => {
+    const onSubmit = (data: FormValues, setIsEditable: Dispatch<React.SetStateAction<string>> ) => {
         dispatch(todoUpdate(data))
+        setIsEditable('')
     }
 
-    const TodoActions = (action: string, todo: Partial<Record<todoTitles, string | undefined>>) => {
+    const TodoActions = (
+        action: string, 
+        todo: Partial<Record<todoTitles, string | undefined>>,  
+        setIsEditable: Dispatch<React.SetStateAction<string>>
+    ) => {
         if (action === 'delete') {
             dispatch(todoDelete(todo))
         }
 
         if (action === 'edit') {
-
-            handleSubmit(onSubmit)()
+            handleSubmit((data) => onSubmit(data, setIsEditable))()
         }
-
     }
 
     const handleChange = (event: React.SyntheticEvent, newValue: string) => {
@@ -62,17 +59,17 @@ const Todos = () => {
 
     return (
         <div>
-            <Box sx={{display: 'flex', justifyContent: 'center', margin: '20px 0'}}>
-            <Tabs
-                value={tab}
-                sx={{maxWidth: '290px', width: '100%'}}
-                onChange={handleChange}
-                aria-label="wrapped label tabs example"
-                
-            >
-                <Tab value="pending" label="Todo List" />
-                <Tab value="deleted" label="Deleted TodoList" />
-            </Tabs>
+            <Box sx={tabsBoxStyle}>
+                <Tabs
+                    value={tab}
+                    sx={tabsStyle}
+                    onChange={handleChange}
+                    aria-label="wrapped label tabs example"
+
+                >
+                    <Tab value="pending" label="Todo List" />
+                    <Tab value="deleted" label="Deleted TodoList" />
+                </Tabs>
             </Box>
             {tab === 'pending' ?
                 <DataTable<todoTitles>
@@ -82,6 +79,7 @@ const Todos = () => {
                     actionsName={['edit', 'delete']}
                     action={TodoActions}
                     setValue={setValue}
+                    errors={errors}
                 /> :
                 <DataTable<todoTitles>
                     data={deletedTodos}

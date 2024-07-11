@@ -1,12 +1,8 @@
 import { Box, TextField } from "@mui/material"
 import { FC } from "react"
 import { Control, useController } from "react-hook-form"
-
-type FormValues = {
-    title: string
-    description?: string
-    deadline?: string
-}
+import { FormValues } from "../../pages/Todos/todoTypes"
+import { inputBoxStyle, inputStyle } from "./style"
 
 interface IProps {
     control: Control<FormValues, any>
@@ -19,14 +15,14 @@ export const Input: FC<IProps> = ({ control, name, error }) => {
     const { field, fieldState } = useController({ control, name })
 
     return (
-        <Box sx={{p: {color: 'red'}}}>
+        <Box sx={inputBoxStyle}>
             <TextField
                 id="outlined-basic"
                 label={name}
                 variant="outlined"
                 {...field}
                 placeholder={name}
-                sx={{ width: '150px' }}
+                sx={inputStyle}
             />
             {(fieldState.isTouched && !!error) &&
                 <p> {error}</p>
